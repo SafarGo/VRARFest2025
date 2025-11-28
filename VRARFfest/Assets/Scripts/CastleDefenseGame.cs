@@ -8,6 +8,7 @@ public class CastleDefenseGame : MonoBehaviour
     public GameObject[] cannons;
     public GameObject castle;
     public GameObject[] ballPrefabs;
+    public Transform targetObject; // Объект, в который должны попадать шарики
 
     [Header("Game Settings")]
     public float minShootInterval = 3f;
@@ -24,7 +25,11 @@ public class CastleDefenseGame : MonoBehaviour
     [Header("Scale Settings")]
     public float startBallScale = 0.5f;
     public float maxBallScale = 0.2f;
-    public float scaleIncreaseAmount = 0.05f; // насколько увеличиваем размер
+    public float scaleIncreaseAmount = 0.05f;
+
+    [Header("Ballistic Settings")]
+    public float minLaunchAngle = 30f; // Минимальный угол запуска
+    public float maxLaunchAngle = 80f; // Максимальный угол запуска
 
     [Header("Game State")]
     public int score = 0;
@@ -40,6 +45,10 @@ public class CastleDefenseGame : MonoBehaviour
     {
         currentBallSpeed = startBallSpeed;
         currentBallScale = startBallScale;
+
+        // Если targetObject не назначен, используем замок по умолчанию
+        if (targetObject == null)
+            targetObject = castle.transform;
 
         StartCoroutine(ShootingRoutine());
         StartCoroutine(SpeedIncreaseRoutine());
@@ -73,10 +82,10 @@ public class CastleDefenseGame : MonoBehaviour
             yield return new WaitForSeconds(speedIncreaseInterval);
 
             currentBallScale -= scaleIncreaseAmount;
-            if (currentBallScale > maxBallScale)
+            if (currentBallScale < maxBallScale)
                 currentBallScale = maxBallScale;
 
-            Debug.Log("Размер шариков увеличен: " + currentBallScale);
+            Debug.Log("Размер шариков уменьшен: " + currentBallScale);
         }
     }
 
@@ -90,9 +99,9 @@ public class CastleDefenseGame : MonoBehaviour
             GameObject ball = Instantiate(ballPrefab, cannon.transform.position, cannon.transform.rotation);
 
             BallBehavior bb = ball.AddComponent<BallBehavior>();
-            bb.Initialize(castle.transform, this, currentBallSpeed, currentBallScale);
+            bb.Initialize(targetObject, this, currentBallSpeed, currentBallScale);
 
-            bb.ShootBall(cannon.transform.forward);
+            bb.ShootToTarget();
 
             activeBalls.Add(ball);
 
