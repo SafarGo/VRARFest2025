@@ -18,10 +18,20 @@ public class CastleDefenseGame : MonoBehaviour
     public Transform targetObject;
 
     [Header("Animation Settings")]
-    // Время от начала анимации до момента вылета ядра (подбирается вручную)
+    [Tooltip("Задержка между стартом анимации и вылетом снаряда/звуком.")]
     public float shootSyncDelay = 0.5f;
-    // Приватный массив для хранения найденных компонентов Animator
+    // Приватные массивы для быстрой работы
     private Animator[] _cannonAnimators;
+
+    [Header("Audio Clips")]
+    [Tooltip("Звук, проигрываемый при выстреле пушки (выстрел.mp3).")]
+    public AudioClip shootSound;
+    [Tooltip("Звук, проигрываемый при попадании в замок (попадание.mp3).")]
+    public AudioClip hitSound;
+    [Tooltip("Звук, проигрываемый, когда мяч отбит (отбил.mp3). Используется в Bita.cs")]
+    public AudioClip deflectionSound;
+
+    private AudioSource _audioSource; // Центральный AudioSource на этом объекте
 
     [Header("Game Settings")]
     public float minShootInterval = 3f;
@@ -59,6 +69,15 @@ public class CastleDefenseGame : MonoBehaviour
         if (targetObject == null)
             targetObject = castle.transform;
 
+        // --- ИНИЦИАЛИЗАЦИЯ ЦЕНТРАЛЬНОГО AUDIO SOURCE ---
+        _audioSource = GetComponent<AudioSource>();
+        if (_audioSource == null)
+        {
+            _audioSource = gameObject.AddComponent<AudioSource>();
+            _audioSource.playOnAwake = false;
+        }
+        // ------------------------------------------------
+
         StopGameLogic();
     }
 
@@ -89,10 +108,9 @@ public class CastleDefenseGame : MonoBehaviour
     {
         Debug.Log(">> Игрок вошел в комнату. Игра началась.");
 
-        // Проверка соответствия массивов
         if (spawnPoints.Length != cannonModels.Length)
         {
-            Debug.LogError("ОШИБКА: Количество Spawn Points (точек спавна) не совпадает с количеством Cannon Models (моделей пушек)! Должно быть одинаковым.");
+            Debug.LogError("ОШИБКА: Количество точек спавна не совпадает с количеством моделей пушек!");
             return;
         }
 
@@ -106,18 +124,16 @@ public class CastleDefenseGame : MonoBehaviour
         activeBalls.Clear();
         StopAllCoroutines();
 
-        // --- НОВАЯ ЛОГИКА: ЗАПОЛНЕНИЕ МАССИВА АНИМАТОРОВ ---
+        // Инициализация массива аниматоров
         _cannonAnimators = new Animator[cannonModels.Length];
         for (int i = 0; i < cannonModels.Length; i++)
         {
-            // Ищем Animator НА САМОМ объекте cannonModels[i] (или на его дочерних)
-            _cannonAnimators[i] = cannonModels[i].GetComponent<Animator>(); // Используем GetComponent, так как мы ожидаем Animator на самой модели
+            _cannonAnimators[i] = cannonModels[i].GetComponent<Animator>();
             if (_cannonAnimators[i] == null)
             {
                 Debug.LogError($"Модель пушки {cannonModels[i].name} (индекс {i}) не имеет компонента Animator!");
             }
         }
-        // -----------------------------------------------------
 
         // Запуск корутин
         StartCoroutine(ShootingRoutine());
@@ -176,7 +192,7 @@ public class CastleDefenseGame : MonoBehaviour
             // 2. Получаем Точку Спавна (позиция)
             GameObject selectedSpawnPoint = spawnPoints[randomIndex];
 
-            // 3. Получаем Аниматор (для запуска анимации)
+            // 3. Получаем Аниматор
             Animator cannonAnim = _cannonAnimators[randomIndex];
 
             // 4. Запускаем анимацию
@@ -188,6 +204,14 @@ public class CastleDefenseGame : MonoBehaviour
             // 5. Ждем, пока анимация дойдет до момента "бабах" (синхронизация)
             if (shootSyncDelay > 0)
                 yield return new WaitForSeconds(shootSyncDelay);
+
+            // --- ВОСПРОИЗВЕДЕНИЕ ЗВУКА ВЫСТРЕЛА (НОВАЯ ПОЗИЦИЯ) ---
+            if (shootSound != null && _audioSource != null)
+            {
+                // Теперь звук синхронизирован с моментом создания ядра
+                _audioSource.PlayOneShot(shootSound, 1f);
+            }
+            // -------------------------------------------------------
 
             // 6. Создаем и запускаем ядро в точке спавна
             GameObject ballPrefab = ballPrefabs[Random.Range(0, ballPrefabs.Length)];
@@ -207,7 +231,7 @@ public class CastleDefenseGame : MonoBehaviour
     }
 
     // =================================================================
-    // ЛОГИКА УРОНА
+    // ЛОГИКА УРОНА И АУДИО
     // =================================================================
 
     public void CastleHit(int damage)
@@ -215,6 +239,14 @@ public class CastleDefenseGame : MonoBehaviour
         if (!isPlayerInRoom) return;
 
         castleHealth -= damage;
+
+        // --- ВОСПРОИЗВЕДЕНИЕ ЗВУКА ПОПАДАНИЯ ---
+        if (hitSound != null && _audioSource != null)
+        {
+            _audioSource.PlayOneShot(hitSound, 1f);
+        }
+        // ----------------------------------------
+
         if (castleHealth <= 0)
         {
             castleHealth = 0;

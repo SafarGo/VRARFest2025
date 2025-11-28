@@ -1,8 +1,14 @@
 using System.Collections;
 using UnityEngine;
 
+[RequireComponent(typeof(Rigidbody))]
 public class BallBehavior : MonoBehaviour
 {
+    // --- ПУБЛИЧНЫЕ НАСТРОЙКИ (Видны в Инспекторе) ---
+    [Tooltip("Урон, который наносит ядро замку.")]
+    public int damageAmount = 10;
+
+    // --- Приватные поля, устанавливаемые при инициализации ---
     private Transform target;
     private CastleDefenseGame gameManager;
 
@@ -51,6 +57,7 @@ public class BallBehavior : MonoBehaviour
 
         Debug.Log($"Ball SHOT | Speed={shootSpeed:F2} | Target={target.name} | Final Vel: {initialVelocity}");
 
+        // Устанавливаем таймер на самоуничтожение, если мяч не достиг цели
         StartCoroutine(DestroyAfterTime(15f));
     }
 
@@ -76,11 +83,39 @@ public class BallBehavior : MonoBehaviour
     {
         if (rb == null || !rb.isKinematic) return;
 
-        rb.isKinematic = false;            // Включаем физику
-        rb.useGravity = true;              // Включаем гравитацию
+        rb.isKinematic = false;          // Включаем физику
+        rb.useGravity = true;            // Включаем гравитацию
         rb.linearVelocity = savedVelocity; // Восстанавливаем сохраненную скорость
         savedVelocity = Vector3.zero;      // Сбрасываем сохраненное значение
         Debug.Log($"Ball resumed, restored velocity: {rb.linearVelocity}");
+    }
+
+    // --- ОБРАБОТКА СТОЛКНОВЕНИЙ ---
+
+    void OnCollisionEnter(Collision collision)
+    {
+        // Проверяем, что игра не на паузе
+        if (gameManager != null && (gameManager.isPaused || !gameManager.isPlayerInRoom)) return;
+
+        // --- УДАР ПО ЗАМКУ ---
+        if (collision.gameObject.CompareTag("Castle"))
+        {
+            if (gameManager != null)
+            {
+                // Вызываем метод нанесения урона в менеджере игры
+                gameManager.CastleHit(damageAmount);
+            }
+            Destroy(gameObject); // Уничтожаем шарик
+        }
+
+        // --- УДАР О ЗЕМЛЮ (или другую поверхность) ---
+        if (collision.gameObject.CompareTag("Ground"))
+        {
+            // Можно добавить отскок или уничтожить через короткое время
+            // Destroy(gameObject, 3f); 
+        }
+
+        // Примечание: столкновение с битой обрабатывается в скрипте Bita.cs
     }
 
     // --- БАЛЛИСТИЧЕСКИЙ РАСЧЕТ И КАЛИБРОВКА ---
@@ -95,7 +130,6 @@ public class BallBehavior : MonoBehaviour
 
         float speedSq = speedMagnitude * speedMagnitude;
 
-        // Объявление переменных в родительской области для избежания CS0136
         Vector3 horizontalDir = horizontalDisplacement.normalized;
         float finalAngle = float.NaN;
 
@@ -108,13 +142,12 @@ public class BallBehavior : MonoBehaviour
 
         if (speedSq < vMinSquared * 0.995f)
         {
-            // Скорость недостаточна. Используем максимальный угол для максимальной дальности.
+            // Скорость недостаточна. Используем максимальный угол
             finalAngle = maxAngleRad;
         }
         else
         {
             // --- 2. РАСЧЕТ ГАРАНТИРОВАННОГО ПОПАДАНИЯ ---
-
             float discriminant = speedSq * speedSq - g * (g * hDist * hDist + 2 * vDist * speedSq);
             if (discriminant < 0) discriminant = 0;
             float sqrtDisc = Mathf.Sqrt(discriminant);
@@ -136,14 +169,13 @@ public class BallBehavior : MonoBehaviour
             }
             else
             {
-                // Если оба угла вне заданного диапазона, но цель достижима, используем низкую траекторию
+                // Если ни один из углов не в диапазоне, берем первый (наиболее прямой)
                 finalAngle = angle1;
                 if (float.IsNaN(finalAngle)) finalAngle = angle2;
             }
         }
 
         // --- 3. ФОРМИРОВАНИЕ ВЕКТОРА СКОРОСТИ ---
-
         if (float.IsNaN(finalAngle))
         {
             return Vector3.zero;
@@ -164,17 +196,5 @@ public class BallBehavior : MonoBehaviour
         yield return new WaitForSeconds(t);
         if (gameObject != null)
             Destroy(gameObject);
-    }
-
-    void OnCollisionEnter(Collision collision)
-    {
-        // Проверяем, что игра не на паузе, прежде чем наносить урон
-        if (gameManager != null && gameManager.isPaused) return;
-
-        if (collision.gameObject.CompareTag("Castle"))
-        { 
-            gameManager.CastleHit(10);
-            Destroy(gameObject);
-        }
     }
 }
