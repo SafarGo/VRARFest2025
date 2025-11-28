@@ -5,14 +5,23 @@ using UnityEngine;
 public class CastleDefenseGame : MonoBehaviour
 {
     [Header("Door Simulation")]
-    public bool isPlayerInRoom = false; // Та самая булевая переменная для имитации
-    private bool _wasInRoom = false;    // Для отслеживания изменения состояния
+    public bool isPlayerInRoom = false;
+    private bool _wasInRoom = false;
 
     [Header("Game Objects")]
-    public GameObject[] cannons;
+    // 1. Точки, ОТКУДА вылетает ядро (позиция спавна)
+    public GameObject[] spawnPoints;
+    // 2. Объекты, КОТОРЫЕ проигрывают анимацию (должен быть Animator)
+    public GameObject[] cannonModels;
     public GameObject castle;
     public GameObject[] ballPrefabs;
     public Transform targetObject;
+
+    [Header("Animation Settings")]
+    // Время от начала анимации до момента вылета ядра (подбирается вручную)
+    public float shootSyncDelay = 0.5f;
+    // Приватный массив для хранения найденных компонентов Animator
+    private Animator[] _cannonAnimators;
 
     [Header("Game Settings")]
     public float minShootInterval = 3f;
@@ -47,39 +56,45 @@ public class CastleDefenseGame : MonoBehaviour
 
     void Start()
     {
-        // Базовая инициализация ссылок, но НЕ запуск игры
         if (targetObject == null)
             targetObject = castle.transform;
 
-        // При старте сцены убеждаемся, что всё чисто
         StopGameLogic();
     }
 
     void Update()
     {
-        // --- ЛОГИКА ДВЕРИ (ПРОВЕРКА ИЗМЕНЕНИЯ СОСТОЯНИЯ) ---
         if (isPlayerInRoom != _wasInRoom)
         {
             if (isPlayerInRoom)
             {
-                StartGameLogic(); // Зашли в дверь -> Старт
+                StartGameLogic();
             }
             else
             {
-                StopGameLogic();  // Вышли из двери -> Стоп/Сброс
+                StopGameLogic();
             }
             _wasInRoom = isPlayerInRoom;
         }
 
-        // Таймер работает только если игра активна и игрок внутри
         if (isPlayerInRoom && !gameOver)
             gameTimer += Time.deltaTime;
     }
 
-    // Метод запуска игры (перенесен из Start)
+    // =================================================================
+    // МЕТОДЫ УПРАВЛЕНИЯ ИГРОВЫМ СОСТОЯНИЕМ
+    // =================================================================
+
     public void StartGameLogic()
     {
         Debug.Log(">> Игрок вошел в комнату. Игра началась.");
+
+        // Проверка соответствия массивов
+        if (spawnPoints.Length != cannonModels.Length)
+        {
+            Debug.LogError("ОШИБКА: Количество Spawn Points (точек спавна) не совпадает с количеством Cannon Models (моделей пушек)! Должно быть одинаковым.");
+            return;
+        }
 
         // Сброс переменных
         castleHealth = maxCastleHealth;
@@ -89,7 +104,20 @@ public class CastleDefenseGame : MonoBehaviour
         currentBallScale = startBallScale;
 
         activeBalls.Clear();
-        StopAllCoroutines(); // На случай, если что-то висело
+        StopAllCoroutines();
+
+        // --- НОВАЯ ЛОГИКА: ЗАПОЛНЕНИЕ МАССИВА АНИМАТОРОВ ---
+        _cannonAnimators = new Animator[cannonModels.Length];
+        for (int i = 0; i < cannonModels.Length; i++)
+        {
+            // Ищем Animator НА САМОМ объекте cannonModels[i] (или на его дочерних)
+            _cannonAnimators[i] = cannonModels[i].GetComponent<Animator>(); // Используем GetComponent, так как мы ожидаем Animator на самой модели
+            if (_cannonAnimators[i] == null)
+            {
+                Debug.LogError($"Модель пушки {cannonModels[i].name} (индекс {i}) не имеет компонента Animator!");
+            }
+        }
+        // -----------------------------------------------------
 
         // Запуск корутин
         StartCoroutine(ShootingRoutine());
@@ -97,34 +125,32 @@ public class CastleDefenseGame : MonoBehaviour
         StartCoroutine(ScaleIncreaseRoutine());
     }
 
-    // Метод остановки игры (полная очистка)
     public void StopGameLogic()
     {
         Debug.Log("<< Игрок вышел. Игра остановлена и сброшена.");
-
         StopAllCoroutines();
 
-        // Удаляем все шарики, которые сейчас есть на сцене
         foreach (GameObject ball in activeBalls)
         {
             if (ball != null) Destroy(ball);
         }
         activeBalls.Clear();
 
-        // Сбрасываем флаги (опционально)
         gameOver = false;
+        _cannonAnimators = null;
     }
 
-    // ... (Остальные корутины ShootingRoutine, SpeedIncreaseRoutine и т.д. остаются без изменений) ...
+    // =================================================================
+    // КОРУТИНЫ
+    // =================================================================
 
     IEnumerator SpeedIncreaseRoutine()
     {
-        while (!gameOver && isPlayerInRoom) // Добавлена проверка isPlayerInRoom
+        while (!gameOver && isPlayerInRoom)
         {
             yield return new WaitForSeconds(speedIncreaseInterval);
             currentBallSpeed += speedIncreaseAmount;
             if (currentBallSpeed > maxBallSpeed) currentBallSpeed = maxBallSpeed;
-            Debug.Log("Скорость увеличена: " + currentBallSpeed);
         }
     }
 
@@ -135,35 +161,58 @@ public class CastleDefenseGame : MonoBehaviour
             yield return new WaitForSeconds(speedIncreaseInterval);
             currentBallScale -= scaleIncreaseAmount;
             if (currentBallScale < maxBallScale) currentBallScale = maxBallScale;
-            Debug.Log("Размер шариков уменьшен: " + currentBallScale);
         }
     }
 
     IEnumerator ShootingRoutine()
     {
-        while (!gameOver && isPlayerInRoom)
+        if (_cannonAnimators == null) yield break;
+
+        while (!gameOver && isPlayerInRoom && spawnPoints.Length > 0 && ballPrefabs.Length > 0)
         {
-            if (cannons.Length > 0 && ballPrefabs.Length > 0)
+            // 1. Выбираем случайный ИНДЕКС
+            int randomIndex = Random.Range(0, spawnPoints.Length);
+
+            // 2. Получаем Точку Спавна (позиция)
+            GameObject selectedSpawnPoint = spawnPoints[randomIndex];
+
+            // 3. Получаем Аниматор (для запуска анимации)
+            Animator cannonAnim = _cannonAnimators[randomIndex];
+
+            // 4. Запускаем анимацию
+            if (cannonAnim != null)
             {
-                GameObject cannon = cannons[Random.Range(0, cannons.Length)];
-                GameObject ballPrefab = ballPrefabs[Random.Range(0, ballPrefabs.Length)];
-                GameObject ball = Instantiate(ballPrefab, cannon.transform.position, Quaternion.identity);
-
-                BallBehavior bb = ball.GetComponent<BallBehavior>();
-                if (bb == null) bb = ball.AddComponent<BallBehavior>();
-
-                bb.Initialize(targetObject, this, currentBallSpeed, currentBallScale);
-                bb.ShootToTarget();
-
-                activeBalls.Add(ball);
+                cannonAnim.SetTrigger("Fire");
             }
+
+            // 5. Ждем, пока анимация дойдет до момента "бабах" (синхронизация)
+            if (shootSyncDelay > 0)
+                yield return new WaitForSeconds(shootSyncDelay);
+
+            // 6. Создаем и запускаем ядро в точке спавна
+            GameObject ballPrefab = ballPrefabs[Random.Range(0, ballPrefabs.Length)];
+            GameObject ball = Instantiate(ballPrefab, selectedSpawnPoint.transform.position, Quaternion.identity);
+
+            BallBehavior bb = ball.GetComponent<BallBehavior>();
+            if (bb == null) bb = ball.AddComponent<BallBehavior>();
+
+            bb.Initialize(targetObject, this, currentBallSpeed, currentBallScale);
+            bb.ShootToTarget();
+
+            activeBalls.Add(ball);
+
+            // 7. Ждем следующего залпа
             yield return new WaitForSeconds(Random.Range(minShootInterval, maxShootInterval));
         }
     }
 
+    // =================================================================
+    // ЛОГИКА УРОНА
+    // =================================================================
+
     public void CastleHit(int damage)
     {
-        if (!isPlayerInRoom) return; // Урон не проходит, если игрока нет
+        if (!isPlayerInRoom) return;
 
         castleHealth -= damage;
         if (castleHealth <= 0)
@@ -171,15 +220,11 @@ public class CastleDefenseGame : MonoBehaviour
             castleHealth = 0;
             GameOver();
         }
-        Debug.Log("Castle Health: " + castleHealth);
     }
 
     void GameOver()
     {
         gameOver = true;
         StopAllCoroutines();
-        Debug.Log("GAME OVER. Final Time: " + gameTimer);
-        // Тут можно не удалять шары сразу, чтобы игрок увидел поражение,
-        // но когда он выйдет из двери (isPlayerInRoom = false), StopGameLogic() всё почистит.
     }
 }
