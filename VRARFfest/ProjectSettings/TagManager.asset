@@ -7,6 +7,8 @@ TagManager:
   - Castle
   - Ball
   - PlayerWeapon
+  - Car
+  - Die
   layers:
   - Default
   - TransparentFX
