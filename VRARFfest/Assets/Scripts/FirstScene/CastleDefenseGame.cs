@@ -5,7 +5,7 @@ using UnityEngine;
 public class CastleDefenseGame : MonoBehaviour
 {
     [Header("Door Simulation")]
-    public bool isPlayerInRoom = false;
+    public static bool isPlayerInRoom = false;
     private bool _wasInRoom = false;
 
     [Header("Game Objects")]
@@ -258,5 +258,10 @@ public class CastleDefenseGame : MonoBehaviour
     {
         gameOver = true;
         StopAllCoroutines();
+    }
+    public void SetPlayerInRoomTrue()
+    {
+        isPlayerInRoom = true;
+        Debug.Log("Игра началась! isPlayerInRoom = true.");
     }
 }

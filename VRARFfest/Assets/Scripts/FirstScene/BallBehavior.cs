@@ -95,7 +95,7 @@ public class BallBehavior : MonoBehaviour
     void OnCollisionEnter(Collision collision)
     {
         // Проверяем, что игра не на паузе
-        if (gameManager != null && (gameManager.isPaused || !gameManager.isPlayerInRoom)) return;
+        if (gameManager != null && (gameManager.isPaused || !CastleDefenseGame.isPlayerInRoom)) return;
 
         // --- УДАР ПО ЗАМКУ ---
         if (collision.gameObject.CompareTag("Castle"))
@@ -105,21 +105,9 @@ public class BallBehavior : MonoBehaviour
                 // Вызываем метод нанесения урона в менеджере игры
                 gameManager.CastleHit(damageAmount);
             }
-            Destroy(gameObject); // Уничтожаем шарик
+            Destroy(gameObject);
         }
-
-        // --- УДАР О ЗЕМЛЮ (или другую поверхность) ---
-        if (collision.gameObject.CompareTag("Ground"))
-        {
-            // Можно добавить отскок или уничтожить через короткое время
-            // Destroy(gameObject, 3f); 
-        }
-
-        // Примечание: столкновение с битой обрабатывается в скрипте Bita.cs
     }
-
-    // --- БАЛЛИСТИЧЕСКИЙ РАСЧЕТ И КАЛИБРОВКА ---
-
     private Vector3 CalculateGuaranteedHitVelocity(Vector3 targetPos, float speedMagnitude)
     {
         Vector3 displacement = targetPos - transform.position;
