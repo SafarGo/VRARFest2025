@@ -4,6 +4,9 @@
 
     public class CastleDefenseGame : MonoBehaviour
     {
+
+        public GameObject cannonMuzzleFlashPrefab;
+
         [Header("Door Simulation")]
         public static bool isPlayerInRoom = false;
         private bool _wasInRoom = false;
@@ -18,17 +21,13 @@
         public Transform targetObject;
 
         [Header("Animation Settings")]
-        [Tooltip("Задержка между стартом анимации и вылетом снаряда/звуком.")]
         public float shootSyncDelay = 0.5f;
 
         private Animator[] _cannonAnimators;
 
         [Header("Audio Clips")]
-        [Tooltip("Звук, проигрываемый при выстреле пушки (выстрел.mp3).")]
         public AudioClip shootSound;
-        [Tooltip("Звук, проигрываемый при попадании в замок (попадание.mp3).")]
         public AudioClip hitSound;
-        [Tooltip("Звук, проигрываемый, когда мяч отбит (отбил.mp3). Используется в Bita.cs")]
         public AudioClip deflectionSound;
 
         private AudioSource _audioSource; 
@@ -100,13 +99,6 @@
 
         public void StartGameLogic()
         {
-            Debug.Log(">> Игрок вошел в комнату. Игра началась.");
-
-            if (spawnPoints.Length != cannonModels.Length)
-            {
-                Debug.LogError("ОШИБКА: Количество точек спавна не совпадает с количеством моделей пушек!");
-                return;
-            }
             Counter.score = 0;
             castleHealth = maxCastleHealth;
             gameOver = false;
@@ -121,13 +113,8 @@
             for (int i = 0; i < cannonModels.Length; i++)
             {
                 _cannonAnimators[i] = cannonModels[i].GetComponent<Animator>();
-                if (_cannonAnimators[i] == null)
-                {
-                    Debug.LogError($"Модель пушки {cannonModels[i].name} (индекс {i}) не имеет компонента Animator!");
-                }
             }
 
-            // Запуск корутин
             StartCoroutine(ShootingRoutine());
             StartCoroutine(SpeedIncreaseRoutine());
             StartCoroutine(ScaleIncreaseRoutine());
@@ -140,7 +127,7 @@
 
             foreach (GameObject ball in activeBalls)
             {
-                if (ball != null) Destroy(ball);
+                Destroy(ball);
             }
             activeBalls.Clear();
 
@@ -168,43 +155,54 @@
             }
         }
 
-        IEnumerator ShootingRoutine()
+    IEnumerator ShootingRoutine()
+    {
+        if (_cannonAnimators == null) yield break;
+
+        while (!gameOver && isPlayerInRoom && spawnPoints.Length > 0 && ballPrefabs.Length > 0)
         {
-            if (_cannonAnimators == null) yield break;
+            int randomIndex = Random.Range(0, spawnPoints.Length);
 
-            while (!gameOver && isPlayerInRoom && spawnPoints.Length > 0 && ballPrefabs.Length > 0)
-            { 
-                int randomIndex = Random.Range(0, spawnPoints.Length);
+            GameObject selectedSpawnPoint = spawnPoints[randomIndex];
+            Animator cannonAnim = _cannonAnimators[randomIndex];
 
-                GameObject selectedSpawnPoint = spawnPoints[randomIndex];
+            cannonAnim.SetTrigger("Fire");
 
-                Animator cannonAnim = _cannonAnimators[randomIndex];
+            if (shootSyncDelay > 0)
+                yield return new WaitForSeconds(shootSyncDelay);
 
-                cannonAnim.SetTrigger("Fire");
-            
-
-                if (shootSyncDelay > 0)
-                    yield return new WaitForSeconds(shootSyncDelay);
-
+            if (shootSound != null)
+            {
                 _audioSource.PlayOneShot(shootSound, 1f);
-
-
-                GameObject ballPrefab = ballPrefabs[Random.Range(0, ballPrefabs.Length)];
-                GameObject ball = Instantiate(ballPrefab, selectedSpawnPoint.transform.position, Quaternion.identity);
-
-                BallBehavior bb = ball.GetComponent<BallBehavior>();
-                if (bb == null) bb = ball.AddComponent<BallBehavior>();
-
-                bb.Initialize(targetObject, this, currentBallSpeed, currentBallScale);
-                bb.ShootToTarget();
-
-                activeBalls.Add(ball);
-
-                yield return new WaitForSeconds(Random.Range(minShootInterval, maxShootInterval));
             }
-        }
 
-        public void CastleHit(int damage)
+            if (cannonMuzzleFlashPrefab != null)
+            {
+
+                GameObject muzzleFlash = Instantiate(
+                    cannonMuzzleFlashPrefab,
+                    selectedSpawnPoint.transform.position,
+                    cannonModels[randomIndex].transform.rotation
+                );
+                Destroy(muzzleFlash, 1f);
+            }
+
+            GameObject ballPrefab = ballPrefabs[Random.Range(0, ballPrefabs.Length)];
+            GameObject ball = Instantiate(ballPrefab, selectedSpawnPoint.transform.position, Quaternion.identity);
+
+            BallBehavior bb = ball.GetComponent<BallBehavior>();
+            if (bb == null) bb = ball.AddComponent<BallBehavior>();
+
+            bb.Initialize(targetObject, this, currentBallSpeed, currentBallScale);
+            bb.ShootToTarget();
+
+            activeBalls.Add(ball);
+
+            yield return new WaitForSeconds(Random.Range(minShootInterval, maxShootInterval));
+        }
+    }
+
+    public void CastleHit(int damage)
         {
             if (!isPlayerInRoom) return;
 
@@ -229,6 +227,5 @@
         {
             Counter.score = 0;
             isPlayerInRoom = true;
-            Debug.Log("Игра началась! isPlayerInRoom = true.");
         }
     }
