@@ -18,13 +18,24 @@ public class CarSpawner : MonoBehaviour
     public float min_int;
     public float max_int;
 
+    [Tooltip("Минимальный интервал спавна (до которого будет уменьшаться)")]
+    public float minSpawnInterval = 0.5f;
+
+    [Tooltip("Время (в секундах) за которое интервал достигнет минимума")]
+    public float timeToReachMinInterval = 60f;
+
     [Tooltip("Скорость машин")]
     public float carSpeed = 10f;
+
+    private float initialSpawnInterval;
+    private float startTime;
 
     void Start()
     {
         // Начинаем спавн
-        spawnInterval = Random.Range(min_int,max_int);
+        spawnInterval = Random.Range(min_int, max_int);
+        initialSpawnInterval = spawnInterval;
+        startTime = Time.time;
         StartCoroutine(SpawnRoutine());
     }
 
@@ -32,6 +43,13 @@ public class CarSpawner : MonoBehaviour
     {
         while (true)
         {
+            // Вычисляем прошедшее время с начала игры
+            float elapsedTime = Time.time - startTime;
+            
+            // Плавно уменьшаем интервал со временем
+            float progress = Mathf.Clamp01(elapsedTime / timeToReachMinInterval);
+            spawnInterval = Mathf.Lerp(initialSpawnInterval, minSpawnInterval, progress);
+            
             // Ждем интервал
             yield return new WaitForSeconds(spawnInterval);
 

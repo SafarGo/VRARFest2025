@@ -7,7 +7,7 @@ public class CarController : MonoBehaviour
 {
     [Header("Настройки движения")]
     [Tooltip("Базовая скорость движения вперед (метров/секунду)")]
-    public float moveSpeed = 10f;
+    public float moveSpeed;
 
     [Header("Настройки ускорения/замедления при свайпе")]
     [Tooltip("Множитель ускорения при свайпе вперед")]
@@ -25,6 +25,11 @@ public class CarController : MonoBehaviour
 
     [Tooltip("Скорость возврата к нормальной скорости")]
     public float speedDecayRate = 2f;
+
+    [Tooltip("Настройки размеров при спавне")]
+    public float scale;
+    public float min_scale_coef;
+    public float max_scale_coef;
 
     // Приватные переменные
     private float currentSpeed;
@@ -50,6 +55,9 @@ public class CarController : MonoBehaviour
         // Подписываемся на события захвата и отпускания
         grabInteractable.selectEntered.AddListener(OnGrabStarted);
         grabInteractable.selectExited.AddListener(OnGrabEnded);
+        scale = Random.Range(min_scale_coef, max_scale_coef);
+        transform.localScale = new Vector3(transform.localScale.x * scale, scale * transform.localScale.x * scale, scale * transform.localScale.x * scale);
+        moveSpeed = Random.Range(0.5f, 2f);
     }
 
     void Update()
@@ -82,6 +90,7 @@ public class CarController : MonoBehaviour
                             isBoosted = true;
                             isSlowed = false;
                             boostTimer = boostDuration;
+                            gameObject.GetComponent<AudioSource>().Play();
                         }
                         else
                         {
