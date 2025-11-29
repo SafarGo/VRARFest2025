@@ -16,7 +16,6 @@ public class StatisticsController : MonoBehaviour
         LoadStatistics();
     }
 
-    // Получение статистики
     public static float GetTotalScore()
     {
         return PlayerPrefs.GetFloat(TOTAL_SCORE_KEY, 0);
@@ -27,7 +26,7 @@ public class StatisticsController : MonoBehaviour
         return PlayerPrefs.GetFloat(TOTAL_TIME_KEY, 0);
     }
 
-    // Изменение статистики
+
     public static void SetTotalScore(float value)
     {
         PlayerPrefs.SetFloat(TOTAL_SCORE_KEY, value);
@@ -52,7 +51,6 @@ public class StatisticsController : MonoBehaviour
         SetTotalTimeInGame(current + value);
     }
 
-    // Сохранение текущей сессии
     public static void SaveCurrentStatistics()
     {
         AddTotalScore(Score);
@@ -62,10 +60,8 @@ public class StatisticsController : MonoBehaviour
         timeInGame = 0;
     }
 
-    // Загрузка статистики
     private static void LoadStatistics()
     {
-        // Статистика загружается автоматически через GetTotalScore/GetTotalTimeInGame
     }
 
     void OnApplicationQuit()
