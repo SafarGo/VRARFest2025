@@ -12,7 +12,17 @@ public class StartGamePer : MonoBehaviour
                 gameObject.GetComponent<AudioSource>().Play();
                 StartCoroutine(Timer());
                 isFirstTime = false;
+            PerekrestokLevelController.timeInGame = 0;
             }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.gameObject.CompareTag("Player") && !isFirstTime)
+        {
+            PerekrestokLevelController.IsGameEnded = true;
+            isFirstTime = true;
+        }
     }
 
 
@@ -21,6 +31,7 @@ public class StartGamePer : MonoBehaviour
         yield return new WaitForSeconds(4);
         Counter.ResetScore(GameType.CarGame);
         PerekrestokLevelController.IsGameStarted = true;
+        PerekrestokLevelController.IsGameEnded = false;
         
         Debug.Log(PerekrestokLevelController.IsGameStarted + "!11111S");
     }

@@ -1,30 +1,17 @@
 using System.Collections;
 using UnityEngine;
 
-/// <summary>
-/// Простой спавнер машин на перекрестке
-/// </summary>
 public class CarSpawner : MonoBehaviour
 {
-    [Header("Настройки")]
-    [Tooltip("Префаб машины для спавна")]
     public GameObject carPrefab;
 
-    [Tooltip("Точки спавна машин (Transform)")]
     public Transform[] spawnPoints;
-
-    [Tooltip("Интервал между спавном машин (секунды)")]
     public float spawnInterval;
     public float min_int;
     public float max_int;
 
-    [Tooltip("Минимальный интервал спавна (до которого будет уменьшаться)")]
     public float minSpawnInterval = 0.5f;
-
-    [Tooltip("Время (в секундах) за которое интервал достигнет минимума")]
     public float timeToReachMinInterval = 60f;
-
-    [Tooltip("Скорость машин")]
     public float carSpeed = 10f;
 
     private float initialSpawnInterval;
@@ -43,7 +30,7 @@ public class CarSpawner : MonoBehaviour
     {
         while (true)
         {
-            if (PerekrestokLevelController.IsGameStarted)
+            if (PerekrestokLevelController.IsGameStarted && !PerekrestokLevelController.IsGameEnded)
             {
                 float elapsedTime = Time.time - startTime;
                 float progress = Mathf.Clamp01(elapsedTime / timeToReachMinInterval);
