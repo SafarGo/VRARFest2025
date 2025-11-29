@@ -18,17 +18,17 @@ public class CastleDefenseGame : MonoBehaviour
     public Transform targetObject;
 
     [Header("Animation Settings")]
-    [Tooltip("Задержка между стартом анимации и вылетом снаряда/звуком.")]
+    [Tooltip("пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ/пїЅпїЅпїЅпїЅпїЅпїЅ.")]
     public float shootSyncDelay = 0.5f;
 
     private Animator[] _cannonAnimators;
 
     [Header("Audio Clips")]
-    [Tooltip("Звук, проигрываемый при выстреле пушки (выстрел.mp3).")]
+    [Tooltip("пїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅпїЅпїЅпїЅпїЅ.mp3).")]
     public AudioClip shootSound;
-    [Tooltip("Звук, проигрываемый при попадании в замок (попадание.mp3).")]
+    [Tooltip("пїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ.mp3).")]
     public AudioClip hitSound;
-    [Tooltip("Звук, проигрываемый, когда мяч отбит (отбил.mp3). Используется в Bita.cs")]
+    [Tooltip("пїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅпїЅпїЅ.mp3). пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ Bita.cs")]
     public AudioClip deflectionSound;
 
     private AudioSource _audioSource; 
@@ -100,14 +100,14 @@ public class CastleDefenseGame : MonoBehaviour
 
     public void StartGameLogic()
     {
-        Debug.Log(">> Игрок вошел в комнату. Игра началась.");
+        Debug.Log(">> пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ. пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ.");
 
         if (spawnPoints.Length != cannonModels.Length)
         {
-            Debug.LogError("ОШИБКА: Количество точек спавна не совпадает с количеством моделей пушек!");
+            Debug.LogError("пїЅпїЅпїЅпїЅпїЅпїЅ: пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ!");
             return;
         }
-        Counter.score += 10;
+        Counter.AddScore(10, GameType.CastleDefense);
         castleHealth = maxCastleHealth;
         gameOver = false;
         gameTimer = 0f;
@@ -123,11 +123,11 @@ public class CastleDefenseGame : MonoBehaviour
             _cannonAnimators[i] = cannonModels[i].GetComponent<Animator>();
             if (_cannonAnimators[i] == null)
             {
-                Debug.LogError($"Модель пушки {cannonModels[i].name} (индекс {i}) не имеет компонента Animator!");
+                Debug.LogError($"пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ {cannonModels[i].name} (пїЅпїЅпїЅпїЅпїЅпїЅ {i}) пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ Animator!");
             }
         }
 
-        // Запуск корутин
+        // пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
         StartCoroutine(ShootingRoutine());
         StartCoroutine(SpeedIncreaseRoutine());
         StartCoroutine(ScaleIncreaseRoutine());
@@ -135,7 +135,7 @@ public class CastleDefenseGame : MonoBehaviour
 
     public void StopGameLogic()
     {
-        Debug.Log("<< Игрок вышел. Игра остановлена и сброшена.");
+        Debug.Log("<< пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ. пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ.");
         StopAllCoroutines();
 
         foreach (GameObject ball in activeBalls)
@@ -227,8 +227,8 @@ public class CastleDefenseGame : MonoBehaviour
     }
     public void SetPlayerInRoomTrue()
     {
-        Counter.score = 0;
+        Counter.ResetScore(GameType.CastleDefense);
         isPlayerInRoom = true;
-        Debug.Log("Игра началась! isPlayerInRoom = true.");
+        Debug.Log("пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ! isPlayerInRoom = true.");
     }
 }

@@ -193,8 +193,9 @@ public class CarController : MonoBehaviour
         }
         if (collision.gameObject.CompareTag("Die"))
         {
-            Counter.AddScore(1);
-            Debug.Log("Score: " + Counter.GetScore());
+            Counter.AddScore(1, GameType.CarGame);
+            Debug.Log("Score: " + Counter.GetScore(GameType.CarGame));
+            PerekrestokLevelController.IsGameEnded = true;
             Destroy(gameObject);
         }
     }

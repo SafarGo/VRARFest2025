@@ -32,7 +32,7 @@ public class CarSpawner : MonoBehaviour
 
     void Start()
     {
-        // Начинаем спавн
+
         spawnInterval = Random.Range(min_int, max_int);
         initialSpawnInterval = spawnInterval;
         startTime = Time.time;
@@ -43,33 +43,31 @@ public class CarSpawner : MonoBehaviour
     {
         while (true)
         {
-            // Вычисляем прошедшее время с начала игры
-            float elapsedTime = Time.time - startTime;
-            
-            // Плавно уменьшаем интервал со временем
-            float progress = Mathf.Clamp01(elapsedTime / timeToReachMinInterval);
-            spawnInterval = Mathf.Lerp(initialSpawnInterval, minSpawnInterval, progress);
-            
-            // Ждем интервал
-            yield return new WaitForSeconds(spawnInterval);
-
-            // Выбираем случайную точку спавна
-            if (spawnPoints.Length > 0 && carPrefab != null)
+            if (PerekrestokLevelController.IsGameStarted)
             {
-                Transform spawnPoint = spawnPoints[Random.Range(0, spawnPoints.Length)];
-                
-                // Спавним машину
-                GameObject car = Instantiate(carPrefab, spawnPoint.position, spawnPoint.rotation);
-                
-                // Добавляем AutoCarController если его нет
-                AutoCarController controller = car.GetComponent<AutoCarController>();
-                if (controller == null)
+                float elapsedTime = Time.time - startTime;
+                float progress = Mathf.Clamp01(elapsedTime / timeToReachMinInterval);
+
+                float currentSpawnInterval = Mathf.Lerp(initialSpawnInterval, minSpawnInterval, progress);
+
+                yield return new WaitForSeconds(currentSpawnInterval);
+
+                if (spawnPoints.Length > 0 && carPrefab != null)
                 {
-                    controller = car.AddComponent<AutoCarController>();
+                    Transform spawnPoint = spawnPoints[Random.Range(0, spawnPoints.Length)];
+                    GameObject car = Instantiate(carPrefab, spawnPoint.position, spawnPoint.rotation);
+
+                    AutoCarController controller = car.GetComponent<AutoCarController>();
+                    if (controller == null)
+                    {
+                        controller = car.AddComponent<AutoCarController>();
+                    }
+                    controller.moveSpeed = carSpeed;
                 }
-                
-                // Устанавливаем скорость
-                controller.moveSpeed = carSpeed;
+            }
+            else
+            {
+                yield return null;
             }
         }
     }
