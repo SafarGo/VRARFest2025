@@ -261,6 +261,7 @@ public class CastleDefenseGame : MonoBehaviour
     }
     public void SetPlayerInRoomTrue()
     {
+        Counter.score = 0;
         isPlayerInRoom = true;
         Debug.Log("Игра началась! isPlayerInRoom = true.");
     }
