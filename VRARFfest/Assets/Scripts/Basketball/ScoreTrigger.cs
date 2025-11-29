@@ -1,19 +1,21 @@
 using UnityEngine;
-
-// Вешается на объект, который является триггером попадания (ScoreTrigger)
+using TMPro;
 public class ScoreTrigger : MonoBehaviour
 {
     public AudioClip scoreSound;
     public ParticleSystem scoreVFX;
 
     public AudioSource audioSource;
-    private int score = 0;
+    private int score = 0;  
+
+    public TMP_Text score_text;
 
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Basketball"))
         {
             score++;
+            score_text.text = "мячей заброшено: "+score.ToString();
             audioSource.PlayOneShot(scoreSound);
             Debug.Log("shoot");
             scoreVFX.Play();

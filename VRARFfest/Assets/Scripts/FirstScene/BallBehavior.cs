@@ -4,11 +4,9 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody))]
 public class BallBehavior : MonoBehaviour
 {
-    // --- ПУБЛИЧНЫЕ НАСТРОЙКИ (Видны в Инспекторе) ---
     [Tooltip("Урон, который наносит ядро замку.")]
     public int damageAmount = 10;
 
-    // --- Приватные поля, устанавливаемые при инициализации ---
     private Transform target;
     private CastleDefenseGame gameManager;
 
@@ -18,12 +16,8 @@ public class BallBehavior : MonoBehaviour
     private float shootSpeed;
     private float startScale;
 
-    // Переменная для сохранения скорости перед паузой
     private Vector3 savedVelocity;
 
-    /// <summary>
-    /// Инициализирует шарик для броска.
-    /// </summary>
     public void Initialize(Transform target, CastleDefenseGame manager, float currentSpeed, float currentScale)
     {
         this.target = target;
@@ -44,9 +38,6 @@ public class BallBehavior : MonoBehaviour
         Debug.Log($"Ball INIT | Speed={shootSpeed:F2} | Scale={startScale:F2}");
     }
 
-    /// <summary>
-    /// Запускает шарик по цели, используя баллистический расчет с калибровкой.
-    /// </summary>
     public void ShootToTarget()
     {
         if (isShot) return;
@@ -57,15 +48,9 @@ public class BallBehavior : MonoBehaviour
 
         Debug.Log($"Ball SHOT | Speed={shootSpeed:F2} | Target={target.name} | Final Vel: {initialVelocity}");
 
-        // Устанавливаем таймер на самоуничтожение, если мяч не достиг цели
         StartCoroutine(DestroyAfterTime(15f));
     }
 
-    // --- МЕТОДЫ ДЛЯ ПАУЗЫ/ВОЗОБНОВЛЕНИЯ (Используются CastleDefenseGame) ---
-
-    /// <summary>
-    /// Сохраняет текущую скорость и замораживает шарик (пауза).
-    /// </summary>
     public void PauseBall()
     {
         if (rb == null || rb.isKinematic) return;
