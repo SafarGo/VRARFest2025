@@ -32,12 +32,12 @@ RenderSettings:
   m_FlareFadeSpeed: 3
   m_HaloTexture: {fileID: 8900000, guid: 562956673376a864984c35f0de87e266, type: 3}
   m_SpotCookie: {fileID: 10001, guid: 0000000000000000e000000000000000, type: 0}
-  m_DefaultReflectionMode: 1
+  m_DefaultReflectionMode: 0
   m_DefaultReflectionResolution: 2048
   m_ReflectionBounces: 5
   m_ReflectionIntensity: 1
-  m_CustomReflection: {fileID: 8900000, guid: 562956673376a864984c35f0de87e266, type: 3}
-  m_Sun: {fileID: 0}
+  m_CustomReflection: {fileID: 0}
+  m_Sun: {fileID: 1825055608}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -94,7 +94,7 @@ LightmapSettings:
     m_TrainingDataDestination: TrainingData
     m_LightProbeSampleCountMultiplier: 4
   m_LightingDataAsset: {fileID: 112000000, guid: 60150c8bcadf8b949ad0b93d2ef99f4d, type: 2}
-  m_LightingSettings: {fileID: 4890085278179872738, guid: 5eee373268c755242bdb0adeac2ed7da, type: 2}
+  m_LightingSettings: {fileID: 4890085278179872738, guid: 97f4f354358955e4ea14cdb9183f9c68, type: 2}
 --- !u!196 &4
 NavMeshSettings:
   serializedVersion: 2
@@ -484,7 +484,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_IsGlobal: 1
-  priority: -59.1
+  priority: -1
   blendDistance: 0
   weight: 1
   sharedProfile: {fileID: 11400000, guid: 10fc4df2da32a41aaa32d77bc913491c, type: 2}
@@ -680,8 +680,8 @@ Light:
   serializedVersion: 11
   m_Type: 2
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_Intensity: 60.5
-  m_Range: 120
+  m_Intensity: 2833
+  m_Range: 47.6
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
   m_CookieSize: 10
@@ -743,7 +743,7 @@ Transform:
   m_GameObject: {fileID: 1825055606}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -5.53, y: 7.8652654, z: -31.67}
+  m_LocalPosition: {x: -1.23, y: 17.04, z: -31.67}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1272,7 +1272,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5849211068043284959, guid: 3ac0644f53b10124cb780036219c60a5, type: 3}
       propertyPath: m_Importance
-      value: 8
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 5849211068043284959, guid: 3ac0644f53b10124cb780036219c60a5, type: 3}
       propertyPath: m_Resolution
@@ -1288,7 +1288,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5849211068043284959, guid: 3ac0644f53b10124cb780036219c60a5, type: 3}
       propertyPath: m_IntensityMultiplier
-      value: 2.05
+      value: 3.2
       objectReference: {fileID: 0}
     - target: {fileID: 5982517089438183957, guid: 3ac0644f53b10124cb780036219c60a5, type: 3}
       propertyPath: m_Range
