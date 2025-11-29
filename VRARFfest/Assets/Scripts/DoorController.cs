@@ -46,13 +46,8 @@ public class DoorController : MonoBehaviour
         // other - это коллайдер объекта, который вышел
         if (other.gameObject.CompareTag("Player"))
         {
-            if (_gameManager != null)
-            {
-                // Отменяем запуск НА ОБЪЕКТЕ МЕНЕДЖЕРА
-                _gameManager.CancelInvoke(StartMethodName);
-            }
+            _gameManager.CancelInvoke(StartMethodName);
 
-            // Сразу выключаем игру (CastleDefenseGame.isPlayerInRoom должен быть static)
             CastleDefenseGame.isPlayerInRoom = false;
 
             Debug.Log("Игрок покинул зону. Запуск отменен, CastleDefenseGame.isPlayerInRoom = false.");

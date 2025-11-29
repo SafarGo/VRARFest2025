@@ -9,6 +9,7 @@ TagManager:
   - PlayerWeapon
   - Car
   - Die
+  - Basketball
   layers:
   - Default
   - TransparentFX
