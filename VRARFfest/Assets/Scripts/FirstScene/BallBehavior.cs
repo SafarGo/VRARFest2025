@@ -4,11 +4,9 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody))]
 public class BallBehavior : MonoBehaviour
 {
-    // --- ПУБЛИЧНЫЕ НАСТРОЙКИ (Видны в Инспекторе) ---
-    [Tooltip("Урон, который наносит ядро замку.")]
+    public GameObject hitVfxPrefab;
     public int damageAmount = 10;
 
-    // --- Приватные поля, устанавливаемые при инициализации ---
     private Transform target;
     private CastleDefenseGame gameManager;
 
@@ -18,12 +16,8 @@ public class BallBehavior : MonoBehaviour
     private float shootSpeed;
     private float startScale;
 
-    // Переменная для сохранения скорости перед паузой
     private Vector3 savedVelocity;
 
-    /// <summary>
-    /// Инициализирует шарик для броска.
-    /// </summary>
     public void Initialize(Transform target, CastleDefenseGame manager, float currentSpeed, float currentScale)
     {
         this.target = target;
@@ -40,13 +34,8 @@ public class BallBehavior : MonoBehaviour
         rb.linearVelocity = Vector3.zero;
 
         transform.localScale = Vector3.one * startScale;
-
-        Debug.Log($"Ball INIT | Speed={shootSpeed:F2} | Scale={startScale:F2}");
     }
 
-    /// <summary>
-    /// Запускает шарик по цели, используя баллистический расчет с калибровкой.
-    /// </summary>
     public void ShootToTarget()
     {
         if (isShot) return;
@@ -55,56 +44,42 @@ public class BallBehavior : MonoBehaviour
         Vector3 initialVelocity = CalculateGuaranteedHitVelocity(target.position, shootSpeed);
         rb.linearVelocity = initialVelocity;
 
-        Debug.Log($"Ball SHOT | Speed={shootSpeed:F2} | Target={target.name} | Final Vel: {initialVelocity}");
-
-        // Устанавливаем таймер на самоуничтожение, если мяч не достиг цели
         StartCoroutine(DestroyAfterTime(15f));
     }
 
-    // --- МЕТОДЫ ДЛЯ ПАУЗЫ/ВОЗОБНОВЛЕНИЯ (Используются CastleDefenseGame) ---
-
-    /// <summary>
-    /// Сохраняет текущую скорость и замораживает шарик (пауза).
-    /// </summary>
     public void PauseBall()
     {
         if (rb == null || rb.isKinematic) return;
 
-        savedVelocity = rb.linearVelocity; // Сохраняем текущую скорость
-        rb.isKinematic = true;             // Замораживаем физику
-        rb.useGravity = false;             // Отключаем гравитацию
-        Debug.Log($"Ball paused, saved velocity: {savedVelocity}");
+        savedVelocity = rb.linearVelocity; 
+        rb.isKinematic = true;             
+        rb.useGravity = false;            
     }
 
-    /// <summary>
-    /// Восстанавливает скорость шарика (возобновление).
-    /// </summary>
     public void ResumeBall()
     {
         if (rb == null || !rb.isKinematic) return;
 
-        rb.isKinematic = false;          // Включаем физику
-        rb.useGravity = true;            // Включаем гравитацию
-        rb.linearVelocity = savedVelocity; // Восстанавливаем сохраненную скорость
-        savedVelocity = Vector3.zero;      // Сбрасываем сохраненное значение
-        Debug.Log($"Ball resumed, restored velocity: {rb.linearVelocity}");
+        rb.isKinematic = false;         
+        rb.useGravity = true;        
+        rb.linearVelocity = savedVelocity; 
+        savedVelocity = Vector3.zero;      
     }
-
-    // --- ОБРАБОТКА СТОЛКНОВЕНИЙ ---
 
     void OnCollisionEnter(Collision collision)
     {
-        // Проверяем, что игра не на паузе
-        if (gameManager != null && (gameManager.isPaused || !CastleDefenseGame.isPlayerInRoom)) return;
-
-        // --- УДАР ПО ЗАМКУ ---
-        if (collision.gameObject.CompareTag("Castle"))
+        if (collision.gameObject.CompareTag("Paddle"))
         {
-            if (gameManager != null)
-            {
-                // Вызываем метод нанесения урона в менеджере игры
-                gameManager.CastleHit(damageAmount);
-            }
+            Vector3 hitPoint = collision.contacts[0].point;
+            
+            GameObject vfx = Instantiate(hitVfxPrefab, hitPoint, Quaternion.identity);
+            Destroy(vfx, 2f); 
+
+        }
+
+        if (target != null && collision.transform == target)
+        {
+            gameManager.CastleHit(10);
             Destroy(gameObject);
         }
     }
@@ -124,18 +99,15 @@ public class BallBehavior : MonoBehaviour
         float minAngleRad = gameManager.minLaunchAngle * Mathf.Deg2Rad;
         float maxAngleRad = gameManager.maxLaunchAngle * Mathf.Deg2Rad;
 
-        // --- 1. КАЛИБРОВКА: Проверка минимальной скорости (V_min) ---
         float distToTarget = displacement.magnitude;
         float vMinSquared = g * (distToTarget + vDist);
 
         if (speedSq < vMinSquared * 0.995f)
         {
-            // Скорость недостаточна. Используем максимальный угол
             finalAngle = maxAngleRad;
         }
         else
         {
-            // --- 2. РАСЧЕТ ГАРАНТИРОВАННОГО ПОПАДАНИЯ ---
             float discriminant = speedSq * speedSq - g * (g * hDist * hDist + 2 * vDist * speedSq);
             if (discriminant < 0) discriminant = 0;
             float sqrtDisc = Mathf.Sqrt(discriminant);
@@ -146,7 +118,6 @@ public class BallBehavior : MonoBehaviour
             float angle1 = Mathf.Atan(tanTheta1);
             float angle2 = Mathf.Atan(tanTheta2);
 
-            // Выбор угла (предпочтение низкой траектории в пределах диапазона)
             if (angle1 >= minAngleRad && angle1 <= maxAngleRad)
             {
                 finalAngle = angle1;
@@ -157,13 +128,11 @@ public class BallBehavior : MonoBehaviour
             }
             else
             {
-                // Если ни один из углов не в диапазоне, берем первый (наиболее прямой)
                 finalAngle = angle1;
                 if (float.IsNaN(finalAngle)) finalAngle = angle2;
             }
         }
 
-        // --- 3. ФОРМИРОВАНИЕ ВЕКТОРА СКОРОСТИ ---
         if (float.IsNaN(finalAngle))
         {
             return Vector3.zero;
@@ -182,7 +151,6 @@ public class BallBehavior : MonoBehaviour
     IEnumerator DestroyAfterTime(float t)
     {
         yield return new WaitForSeconds(t);
-        if (gameObject != null)
-            Destroy(gameObject);
+        Destroy(gameObject);
     }
 }
