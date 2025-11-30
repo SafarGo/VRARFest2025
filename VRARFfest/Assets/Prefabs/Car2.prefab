@@ -32,8 +32,8 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 1.4712, y: 0, z: -3.22097}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 0.1, y: 0.1, z: 0.1}
+  m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 2166380556658350563}
   m_Father: {fileID: 0}
@@ -50,7 +50,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9772a2ea986115f4aa92d2716f5ee09c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CarController
-  moveSpeed: 1
+  moveSpeed: 0.4
   expl: {fileID: 0}
   boostMultiplier: 10
   slowdownMultiplier: 0.498
@@ -58,8 +58,8 @@ MonoBehaviour:
   boostDuration: 2
   speedDecayRate: 2
   scale: 0
-  min_scale_coef: 0.3
-  max_scale_coef: 1.5
+  min_scale_coef: 0.8
+  max_scale_coef: 1.7
 --- !u!54 &2959100783277092401
 Rigidbody:
   m_ObjectHideFlags: 0

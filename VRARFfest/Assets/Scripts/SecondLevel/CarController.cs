@@ -42,7 +42,7 @@
             grabInteractable.selectExited.AddListener(OnGrabEnded);
             scale = Random.Range(min_scale_coef, max_scale_coef);
             transform.localScale = new Vector3(transform.localScale.x * scale, scale * transform.localScale.x * scale, scale * transform.localScale.x * scale);
-            moveSpeed = Random.Range(0.8f, 1.5f);
+            moveSpeed = Random.Range(0.05f, 0.3f);
         }
 
         void Update()

@@ -12,7 +12,7 @@ public class CarSpawner : MonoBehaviour
     public float min_int;
     public float max_int;
 
-    public float minSpawnInterval = 0.5f;
+    public float minSpawnInterval = 0.3f;
     public float timeToReachMinInterval = 60f;
     public float carSpeed = 10f;
 

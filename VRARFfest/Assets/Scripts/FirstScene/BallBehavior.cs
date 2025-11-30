@@ -76,8 +76,7 @@ public class BallBehavior : MonoBehaviour
             Destroy(vfx, 2f); 
 
         }
-
-        if (target != null && collision.transform == target)
+        if (collision.gameObject.CompareTag("Castle"))
         {
             gameManager.CastleHit(10);
             Destroy(gameObject);

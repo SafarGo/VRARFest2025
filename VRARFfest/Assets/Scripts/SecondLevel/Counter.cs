@@ -8,8 +8,8 @@ public class Counter : MonoBehaviour
     [Tooltip("Тип игры для этого счетчика")]
     public GameType gameType;
 
-    private static int castleScore = 0;
-    private static int carScore = 0;
+    public static int castleScore = 0;
+    public static int carScore = 0;
 
     public static int GetScore(GameType gameType)
     {
