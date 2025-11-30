@@ -164,12 +164,13 @@
                 expl.Play();
             PerekrestokLevelController.IsGameEnded = true;
         }
-            if (collision.gameObject.CompareTag("Die") && !PerekrestokLevelController.IsGameEnded)
+            if (collision.gameObject.CompareTag("Die"))
             {
-                Counter.AddScore(1, GameType.CarGame);
-                Debug.Log("Score: " + Counter.GetScore(GameType.CarGame));
-                
-                Destroy(gameObject);
-            }
+                if (!PerekrestokLevelController.IsGameEnded)
+                {
+                    Counter.AddScore(1, GameType.CarGame);
+                }
+            Destroy(gameObject);
         }
+    }
     }

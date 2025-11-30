@@ -297,15 +297,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CarController
   moveSpeed: 0.71
-  expl: {fileID: 0}
+  expl: {fileID: 8446173762689055161}
   boostMultiplier: 10
   slowdownMultiplier: 0.498
   minSwipeSpeed: 1
   boostDuration: 2
   speedDecayRate: 2
   scale: 0
-  min_scale_coef: 0.3
-  max_scale_coef: 1.32
+  min_scale_coef: 0.54
+  max_scale_coef: 1.17
 --- !u!54 &3476371460361221511
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -331,7 +331,7 @@ Rigidbody:
   m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
-  m_Constraints: 112
+  m_Constraints: 118
   m_CollisionDetection: 0
 --- !u!114 &820715982692292798
 MonoBehaviour:
@@ -568,7 +568,7 @@ AudioSource:
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
-  m_Resource: {fileID: 8300000, guid: c9a03c9bc59c3ec4da488e4fc4481d30, type: 3}
+  m_Resource: {fileID: 8300000, guid: 0f5108367178f0f4c8a68fbb96fe6cff, type: 3}
   m_PlayOnAwake: 0
   m_Volume: 0.5
   m_Pitch: 1

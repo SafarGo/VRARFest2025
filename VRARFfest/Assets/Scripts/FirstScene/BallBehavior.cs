@@ -68,7 +68,7 @@ public class BallBehavior : MonoBehaviour
 
     void OnCollisionEnter(Collision collision)
     {
-        if (collision.gameObject.CompareTag("Paddle"))
+        if (collision.gameObject.CompareTag("Paddle") && this.CompareTag("Ball"))
         {
             Vector3 hitPoint = collision.contacts[0].point;
             

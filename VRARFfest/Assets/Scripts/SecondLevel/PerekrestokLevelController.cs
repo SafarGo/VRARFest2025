@@ -46,6 +46,6 @@ public class PerekrestokLevelController : MonoBehaviour
         int seconds = Mathf.FloorToInt(timeInGame % 60f);
         timeText.text = $"Время: {minutes.ToString("D2")}:{seconds.ToString("D2")}";
         scoreText.text = $"Счет: {Counter.GetScore(GameType.CarGame)}";
-
+        recordText.text = $"Рекорд {StatisticsController.GetBestScore(GameType.CarGame)}";
     }
 }

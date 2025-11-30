@@ -1,6 +1,8 @@
     using System.Collections;
     using System.Collections.Generic;
-    using UnityEngine;
+using TMPro;
+using UnityEngine;
+using UnityEngine.SocialPlatforms.Impl;
 
     public class CastleDefenseGame : MonoBehaviour
     {
@@ -10,6 +12,7 @@
         [Header("Door Simulation")]
         public static bool isPlayerInRoom = false;
         private bool _wasInRoom = false;
+        public TMP_Text timertext;
 
         [Header("Game Objects")]
 
@@ -19,6 +22,10 @@
         public GameObject castle;
         public GameObject[] ballPrefabs;
         public Transform targetObject;
+        public static int score;
+        public TMP_Text scoreText;
+        public TMP_Text recordText;
+        public TMP_Text goalText;
 
         [Header("Animation Settings")]
         public float shootSyncDelay = 0.5f;
@@ -62,10 +69,11 @@
 
         private List<GameObject> activeBalls = new List<GameObject>();
         private float gameTimer = 0f;
-
+        
         void Start()
         {
-            if (targetObject == null)
+
+        if (targetObject == null)
                 targetObject = castle.transform;
 
             _audioSource = GetComponent<AudioSource>();
@@ -95,16 +103,21 @@
 
             if (isPlayerInRoom && !gameOver)
                 gameTimer += Time.deltaTime;
-        }
+                scoreText.text = $"Ñקוע: {score}";
+        int minutes = Mathf.FloorToInt(gameTimer / 60f);
+
+        int seconds = Mathf.FloorToInt(gameTimer % 60f);
+        timertext.text = $"Âנולÿ: {minutes.ToString("D2")}:{seconds.ToString("D2")}";
+    }
 
         public void StartGameLogic()
         {
-            Counter.castleScore = 0;
             castleHealth = maxCastleHealth;
             gameOver = false;
             gameTimer = 0f;
             currentBallSpeed = startBallSpeed;
             currentBallScale = startBallScale;
+            score = 0;
 
             activeBalls.Clear();
             StopAllCoroutines();
@@ -213,7 +226,13 @@
 
             if (castleHealth <= 0)
             {
-                castleHealth = 0;
+                goalText.text = $"Â סכוהף‏שוי טדנו ןמןנמבףי םאבנאעü {Mathf.Round(StatisticsController.GetBestScore(GameType.CastleDefense) * 1.5f)} מקךמג";
+                castleHealth = 0;
+                if(score> StatisticsController.GetBestScore(GameType.CastleDefense))
+            {
+                StatisticsController.SetBestScore(score, GameType.CastleDefense);
+                recordText.text = $"Ðוךמנה {StatisticsController.GetBestScore(GameType.CastleDefense)}";
+            }
                 GameOver();
             }
         }
@@ -225,7 +244,7 @@
         }
         public void SetPlayerInRoomTrue()
         {
-            Counter.castleScore = 0;
-            isPlayerInRoom = true;
+            score = 0;  
+            isPlayerInRoom = true;
         }
     }
