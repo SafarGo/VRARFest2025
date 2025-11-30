@@ -1,9 +1,11 @@
 using System.Collections;
+using UnityEditor.ShaderGraph.Internal;
 using UnityEngine;
 
 public class CarSpawner : MonoBehaviour
 {
     public GameObject carPrefab;
+    public GameObject carPrefab1;
 
     public Transform[] spawnPoints;
     public float spawnInterval;
@@ -16,7 +18,7 @@ public class CarSpawner : MonoBehaviour
 
     private float initialSpawnInterval;
     private float startTime;
-
+    private GameObject car;
     void Start()
     {
 
@@ -34,7 +36,7 @@ public class CarSpawner : MonoBehaviour
             {
                 float elapsedTime = Time.time - startTime;
                 float progress = Mathf.Clamp01(elapsedTime / timeToReachMinInterval);
-
+                float tmp = Random.Range(0, 3);
                 float currentSpawnInterval = Mathf.Lerp(initialSpawnInterval, minSpawnInterval, progress);
 
                 yield return new WaitForSeconds(currentSpawnInterval);
@@ -42,9 +44,16 @@ public class CarSpawner : MonoBehaviour
                 if (spawnPoints.Length > 0 && carPrefab != null)
                 {
                     Transform spawnPoint = spawnPoints[Random.Range(0, spawnPoints.Length)];
-                    GameObject car = Instantiate(carPrefab, spawnPoint.position, spawnPoint.rotation);
+                    if(tmp > 1)
+                    {
+                        car = Instantiate(carPrefab, spawnPoint.position, spawnPoint.rotation);
+                    }
+                    else
+                    {
+                        car = Instantiate(carPrefab1, spawnPoint.position, spawnPoint.rotation);
+                    }
 
-                    AutoCarController controller = car.GetComponent<AutoCarController>();
+                        AutoCarController controller = car.GetComponent<AutoCarController>();
                     if (controller == null)
                     {
                         controller = car.AddComponent<AutoCarController>();

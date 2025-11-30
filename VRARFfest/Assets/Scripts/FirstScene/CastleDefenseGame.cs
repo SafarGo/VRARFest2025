@@ -99,7 +99,7 @@
 
         public void StartGameLogic()
         {
-            Counter.score = 0;
+           // Counter.score = 0;
             castleHealth = maxCastleHealth;
             gameOver = false;
             gameTimer = 0f;
@@ -225,7 +225,7 @@
         }
         public void SetPlayerInRoomTrue()
         {
-            Counter.score = 0;
+            //Counter.score = 0;
             isPlayerInRoom = true;
         }
     }
